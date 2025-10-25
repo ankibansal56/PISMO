@@ -1,0 +1,2 @@
+-- This file is intentionally minimal since Hibernate auto-creates schema in dev mode
+-- Data initialization is handled by data.sql
