@@ -49,56 +49,102 @@ REST API for managing customer accounts and transactions built with Spring Boot 
 
 ## Prerequisites
 
-- Java 21 or higher
-- Maven 3.6+ (or use included Maven wrapper)
-- Docker and Docker Compose (optional, for containerized deployment)
+### Option 1: Run with Docker on Windows (Recommended) ⭐
+- **Windows 10/11 with WSL2** (Windows Subsystem for Linux)
+- **Docker Desktop** for Windows with WSL2 backend enabled
+- Git for Windows
 
-## How It Works
+### Option 2: Run Locally
+- **Java 21** or higher
+- **Maven 3.6+** (or use included Maven wrapper)
+- Your favorite IDE (IntelliJ IDEA, Eclipse, VS Code)
 
-### Overview
+## Quick Start
 
-The Pismo Account Service is a secure REST API that manages customer accounts and financial transactions. It uses **JWT-based authentication** to protect all endpoints and ensure secure access.
+### 🐳 Running with Docker (Windows + WSL2)
 
-### Application Flow
+This is the easiest way to run the application on Windows:
 
-1. **Authentication First**: Users must authenticate to get a JWT token
-2. **Use Token**: Include the JWT token in all API requests
-3. **Create Accounts**: Authenticated users can create customer accounts
-4. **Record Transactions**: Authenticated users can record financial transactions
+```powershell
+# 1. Navigate to project directory
+cd "C:\Users\2131hs\OneDrive - BP\Documents\PISMO\PISMO"
 
-### Data Initialization
+# 2. Build Docker image in WSL
+wsl docker build -t pismo-app:latest .
 
-When the application starts in **development mode (H2)**, it automatically initializes:
+# 3. Run the application
+wsl docker run -d --name pismo-app -p 8080:8080 -e SPRING_PROFILES_ACTIVE=dev pismo-app:latest
 
-✅ **4 Operation Types**:
-   - 1: PURCHASE (negative amount)
-   - 2: INSTALLMENT PURCHASE (negative amount)
-   - 3: WITHDRAWAL (negative amount)
-   - 4: PAYMENT (positive amount)
+# 4. Check if it's running
+wsl docker ps
 
-✅ **2 Default Users**:
-   - **admin** / password123 (has ROLE_USER and ROLE_ADMIN)
-   - **user** / password123 (has ROLE_USER)
-
-✅ **2 Roles**:
-   - ROLE_USER (can access all endpoints)
-   - ROLE_ADMIN (for future admin features)
-
-### Quick Start Guide
-
-#### Step 1: Start the Application
-
-```bash
-# Windows
-mvn spring-boot:run
-
-# Linux/Mac
-./mvn spring-boot:run
+# 5. Open Swagger UI in browser
+start http://localhost:8080/swagger-ui.html
 ```
 
-The application will start on `http://localhost:8080`
+**Stop the application:**
+```powershell
+wsl docker stop pismo-app
+wsl docker rm pismo-app
+```
 
-#### Step 2: Login to Get JWT Token
+**View logs:**
+```powershell
+wsl docker logs pismo-app -f
+```
+
+### 💻 Running Locally (Without Docker)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/ankibansal56/PISMO.git
+cd PISMO/PISMO
+
+# 2. Build the project
+./mvnw clean package
+
+# 3. Run the application
+./mvnw spring-boot:run
+
+# Or run the JAR file
+java -jar target/account-service-0.0.1-SNAPSHOT.jar
+```
+
+**For Windows PowerShell:**
+```powershell
+# Build and run
+.\mvnw.cmd clean package
+.\mvnw.cmd spring-boot:run
+```
+
+The application will start on **http://localhost:8080**
+
+### 🎯 Access the Application
+
+Once running, you can access:
+
+- **Swagger UI (Interactive API Docs):** http://localhost:8080/swagger-ui.html
+- **API Base URL:** http://localhost:8080
+- **Health Check:** http://localhost:8080/actuator/health
+- **H2 Console (dev mode):** http://localhost:8080/h2-console
+  - JDBC URL: `jdbc:h2:mem:pismo_db`
+  - Username: `sa`
+  - Password: (leave empty)
+
+### 🔑 Default Credentials
+
+For testing purposes, the application comes with pre-configured users:
+
+| Username | Password | Roles |
+|----------|----------|-------|
+| `admin` | `password123` | ROLE_USER, ROLE_ADMIN |
+| `user` | `password123` | ROLE_USER |
+
+⚠️ **Important:** Change these credentials in production!
+
+## How to Use the API
+
+### Step 1: Login to Get JWT Token
 
 ```bash
 # PowerShell
@@ -715,6 +761,70 @@ The API returns standardized error responses:
 - `404 Not Found` - Resource not found
 - `409 Conflict` - Duplicate resource
 - `500 Internal Server Error` - Unexpected error
+
+## AWS EC2 Deployment 🚀
+
+This application can be deployed to AWS EC2 using Docker. See the comprehensive guides:
+
+### Quick Deployment (3 commands)
+
+```bash
+# 1. SSH to EC2 and clone
+ssh -i "your-key.pem" ec2-user@YOUR-EC2-IP
+git clone https://github.com/ankibansal56/PISMO.git && cd PISMO
+
+# 2. Configure environment
+cp .env.example .env && nano .env  # Add your secrets
+
+# 3. Deploy with automated script
+chmod +x deploy.sh && ./deploy.sh
+```
+
+### 📚 Deployment Documentation
+
+- **[AWS_DEPLOYMENT.md](AWS_DEPLOYMENT.md)** - Complete step-by-step deployment guide
+  - EC2 instance setup and configuration
+  - Docker installation on EC2
+  - PostgreSQL database setup
+  - SSL/HTTPS configuration with Let's Encrypt
+  - Nginx reverse proxy setup
+  - Security best practices
+  
+- **[DEPLOYMENT_CHEATSHEET.md](DEPLOYMENT_CHEATSHEET.md)** - Quick reference for common commands
+  - Essential Docker commands
+  - Database backup/restore
+  - Monitoring and troubleshooting
+  - Update procedures
+
+### Access Your Deployed API
+
+```bash
+# Get your EC2 public IP
+curl http://checkip.amazonaws.com
+
+# Your API will be available at:
+http://YOUR-EC2-PUBLIC-IP:8080
+
+# Swagger UI (interactive testing):
+http://YOUR-EC2-PUBLIC-IP:8080/swagger-ui.html
+```
+
+### Test from Local Machine
+
+```powershell
+# Windows PowerShell
+$ip = "YOUR-EC2-PUBLIC-IP"
+Invoke-RestMethod "http://$ip:8080/actuator/health"
+```
+
+### Production Features
+
+- ✅ PostgreSQL database with persistent storage
+- ✅ Auto-restart on failure
+- ✅ Health checks
+- ✅ Environment-based configuration
+- ✅ Production-ready security settings
+- ✅ Automated deployment script
 
 ## Contributing
 
