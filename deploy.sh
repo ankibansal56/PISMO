@@ -14,7 +14,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Configuration
-APP_DIR="$HOME/PISMO/PISMO"
+APP_DIR="$HOME/PISMO"
 DOCKER_COMPOSE_FILE="docker-compose.yml"
 
 # Check if Docker is installed
