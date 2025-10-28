@@ -8,6 +8,7 @@ import com.pismo.account.exception.ResourceNotFoundException;
 import com.pismo.account.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,18 +23,21 @@ public class AccountService {
     public AccountResponse createAccount(AccountRequest request) {
         log.info("Creating account for document number: {}", request.getDocumentNumber());
         
-        if (accountRepository.existsByDocumentNumber(request.getDocumentNumber())) {
+        try {
+            Account account = new Account();
+            account.setDocumentNumber(request.getDocumentNumber());
+            
+            Account savedAccount = accountRepository.save(account);
+            log.info("Account created successfully with ID: {}", savedAccount.getAccountId());
+            
+            return new AccountResponse(savedAccount.getAccountId(), savedAccount.getDocumentNumber());
+            
+        } catch (DataIntegrityViolationException e) {
+            // Database unique constraint caught duplicate (race condition occurred)
+            log.warn("Duplicate account creation attempted for document number: {}", request.getDocumentNumber());
             throw new DuplicateResourceException(
                     "Account with document number " + request.getDocumentNumber() + " already exists");
         }
-
-        Account account = new Account();
-        account.setDocumentNumber(request.getDocumentNumber());
-        
-        Account savedAccount = accountRepository.save(account);
-        log.info("Account created successfully with ID: {}", savedAccount.getAccountId());
-        
-        return new AccountResponse(savedAccount.getAccountId(), savedAccount.getDocumentNumber());
     }
 
     @Transactional(readOnly = true)
