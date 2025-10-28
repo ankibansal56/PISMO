@@ -4,13 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pismo.account.dto.request.TransactionRequest;
 import com.pismo.account.dto.response.TransactionResponse;
 import com.pismo.account.exception.ResourceNotFoundException;
+import com.pismo.account.security.JwtAuthenticationFilter;
+import com.pismo.account.security.JwtTokenProvider;
 import com.pismo.account.service.TransactionService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -21,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TransactionController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class TransactionControllerTest {
 
     @Autowired
@@ -31,6 +36,15 @@ class TransactionControllerTest {
 
     @MockBean
     private TransactionService transactionService;
+
+    @MockBean
+    private JwtTokenProvider jwtTokenProvider;
+
+    @MockBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @MockBean
+    private UserDetailsService userDetailsService;
 
     @Test
     @DisplayName("POST /transactions - Should create transaction successfully")

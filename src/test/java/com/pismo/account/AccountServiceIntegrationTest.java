@@ -1,8 +1,11 @@
 package com.pismo.account;
 
 import com.pismo.account.dto.request.AccountRequest;
+import com.pismo.account.dto.request.LoginRequest;
+import com.pismo.account.dto.request.RegisterRequest;
 import com.pismo.account.dto.request.TransactionRequest;
 import com.pismo.account.dto.response.AccountResponse;
+import com.pismo.account.dto.response.JwtResponse;
 import com.pismo.account.dto.response.TransactionResponse;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -25,6 +28,7 @@ class AccountServiceIntegrationTest {
     private int port;
 
     private static Long createdAccountId;
+    private static String jwtToken;
 
     @BeforeEach
     void setUp() {
@@ -34,12 +38,49 @@ class AccountServiceIntegrationTest {
 
     @Test
     @Order(1)
+    @DisplayName("Integration Test - Register and Login")
+    void testRegisterAndLogin() {
+        // Register a test user
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setUsername("integrationuser");
+        registerRequest.setEmail("integration@test.com");
+        registerRequest.setPassword("password123");
+
+        given()
+                .contentType(ContentType.JSON)
+                .body(registerRequest)
+                .when()
+                .post("/api/auth/register")
+                .then()
+                .statusCode(201);
+
+        // Login to get JWT token
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.setUsername("integrationuser");
+        loginRequest.setPassword("password123");
+
+        JwtResponse jwtResponse = given()
+                .contentType(ContentType.JSON)
+                .body(loginRequest)
+                .when()
+                .post("/api/auth/login")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(JwtResponse.class);
+
+        jwtToken = jwtResponse.getToken();
+    }
+
+    @Test
+    @Order(2)
     @DisplayName("Integration Test - Create Account")
     void testCreateAccount() {
         AccountRequest request = new AccountRequest("12345678900");
 
         AccountResponse response = given()
                 .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + jwtToken)
                 .body(request)
                 .when()
                 .post("/accounts")
@@ -54,10 +95,11 @@ class AccountServiceIntegrationTest {
     }
 
     @Test
-    @Order(2)
+    @Order(3)
     @DisplayName("Integration Test - Get Account")
     void testGetAccount() {
         given()
+                .header("Authorization", "Bearer " + jwtToken)
                 .when()
                 .get("/accounts/" + createdAccountId)
                 .then()
@@ -67,13 +109,14 @@ class AccountServiceIntegrationTest {
     }
 
     @Test
-    @Order(3)
+    @Order(4)
     @DisplayName("Integration Test - Create Purchase Transaction (Negative Amount)")
     void testCreatePurchaseTransaction() {
         TransactionRequest request = new TransactionRequest(createdAccountId, 1L, new BigDecimal("50.00"));
 
         given()
                 .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + jwtToken)
                 .body(request)
                 .when()
                 .post("/transactions")
@@ -85,13 +128,14 @@ class AccountServiceIntegrationTest {
     }
 
     @Test
-    @Order(4)
+    @Order(5)
     @DisplayName("Integration Test - Create Payment Transaction (Positive Amount)")
     void testCreatePaymentTransaction() {
         TransactionRequest request = new TransactionRequest(createdAccountId, 4L, new BigDecimal("60.00"));
 
         given()
                 .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + jwtToken)
                 .body(request)
                 .when()
                 .post("/transactions")
@@ -103,13 +147,14 @@ class AccountServiceIntegrationTest {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     @DisplayName("Integration Test - Create Duplicate Account")
     void testCreateDuplicateAccount() {
         AccountRequest request = new AccountRequest("12345678900");
 
         given()
                 .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + jwtToken)
                 .body(request)
                 .when()
                 .post("/accounts")
@@ -118,10 +163,11 @@ class AccountServiceIntegrationTest {
     }
 
     @Test
-    @Order(6)
+    @Order(7)
     @DisplayName("Integration Test - Get Non-Existent Account")
     void testGetNonExistentAccount() {
         given()
+                .header("Authorization", "Bearer " + jwtToken)
                 .when()
                 .get("/accounts/999999")
                 .then()
@@ -129,13 +175,14 @@ class AccountServiceIntegrationTest {
     }
 
     @Test
-    @Order(7)
+    @Order(8)
     @DisplayName("Integration Test - Create Transaction with Invalid Account")
     void testCreateTransactionWithInvalidAccount() {
         TransactionRequest request = new TransactionRequest(999999L, 1L, new BigDecimal("50.00"));
 
         given()
                 .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + jwtToken)
                 .body(request)
                 .when()
                 .post("/transactions")
@@ -144,13 +191,14 @@ class AccountServiceIntegrationTest {
     }
 
     @Test
-    @Order(8)
+    @Order(9)
     @DisplayName("Integration Test - Create Transaction with Invalid Operation Type")
     void testCreateTransactionWithInvalidOperationType() {
         TransactionRequest request = new TransactionRequest(createdAccountId, 999L, new BigDecimal("50.00"));
 
         given()
                 .contentType(ContentType.JSON)
+                .header("Authorization", "Bearer " + jwtToken)
                 .body(request)
                 .when()
                 .post("/transactions")

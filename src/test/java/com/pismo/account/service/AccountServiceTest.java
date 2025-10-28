@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.Optional;
 
@@ -41,7 +42,6 @@ class AccountServiceTest {
     @Test
     @DisplayName("Should create account successfully")
     void createAccount_Success() {
-        when(accountRepository.existsByDocumentNumber(anyString())).thenReturn(false);
         when(accountRepository.save(any(Account.class))).thenReturn(account);
 
         AccountResponse response = accountService.createAccount(accountRequest);
@@ -55,11 +55,12 @@ class AccountServiceTest {
     @Test
     @DisplayName("Should throw exception when document number already exists")
     void createAccount_DuplicateDocumentNumber() {
-        when(accountRepository.existsByDocumentNumber(anyString())).thenReturn(true);
+        when(accountRepository.save(any(Account.class)))
+                .thenThrow(new DataIntegrityViolationException("Duplicate document number"));
 
         assertThrows(DuplicateResourceException.class, 
                 () -> accountService.createAccount(accountRequest));
-        verify(accountRepository, never()).save(any(Account.class));
+        verify(accountRepository, times(1)).save(any(Account.class));
     }
 
     @Test
