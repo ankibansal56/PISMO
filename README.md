@@ -42,6 +42,147 @@ REST API for managing customer accounts and transactions built with Spring Boot 
 - **Maven 3.6+** (or use included Maven wrapper)
 - Your favorite IDE
 
+## How to Run the Application
+
+### 🚀 First-Time Setup Guide
+
+#### Option 1: Using Docker (Recommended for Quick Setup)
+
+1. **Install Prerequisites:**
+   - Install [Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)
+   - Enable WSL2 during installation
+   - Ensure Docker Desktop is running
+
+2. **Clone the Repository:**
+   ```powershell
+   git clone https://github.com/ankibansal56/PISMO.git
+   cd PISMO\PISMO
+   ```
+
+3. **Build the Docker Image:**
+   ```powershell
+   wsl docker build -t pismo-app:latest .
+   ```
+
+4. **Run the Application:**
+   ```powershell
+   wsl docker run -d --name pismo-app -p 8080:8080 -e SPRING_PROFILES_ACTIVE=dev pismo-app:latest
+   ```
+
+5. **Verify it's Running:**
+   ```powershell
+   # Check logs
+   wsl docker logs pismo-app -f
+   
+   # Test health endpoint
+   curl http://localhost:8080/actuator/health
+   ```
+
+6. **Access Swagger UI:**
+   ```powershell
+   start http://localhost:8080/swagger-ui.html
+   ```
+
+**To Stop/Remove:**
+```powershell
+wsl docker stop pismo-app
+wsl docker rm pismo-app
+```
+
+---
+
+#### Option 2: Running Locally (For Development)
+
+1. **Install Prerequisites:**
+   - Download and install [Java 21 JDK](https://www.oracle.com/java/technologies/downloads/#java21)
+   - Verify installation:
+     ```powershell
+     java -version  # Should show version 21.x.x
+     ```
+
+2. **Clone the Repository:**
+   ```powershell
+   git clone https://github.com/ankibansal56/PISMO.git
+   cd PISMO\PISMO
+   ```
+
+3. **Build the Project:**
+   ```powershell
+   # Windows (using Maven wrapper)
+   .\mvnw.cmd clean install
+   
+   # Or if you have Maven installed
+   mvn clean install
+   ```
+
+4. **Run the Application:**
+   ```powershell
+   # Windows (using Maven wrapper)
+   .\mvnw.cmd spring-boot:run
+   
+   # Or if you have Maven installed
+   mvn spring-boot:run
+   
+   # Or run directly with Java
+   java -jar target\account-service-1.0.0.jar
+   ```
+
+5. **Verify it's Running:**
+   - You should see: `Started AccountServiceApplication in X seconds`
+   - Open browser: http://localhost:8080/swagger-ui.html
+
+**To Stop:**
+- Press `Ctrl+C` in the terminal
+
+---
+
+#### Option 3: Using Docker Compose
+
+1. **Clone and Navigate:**
+   ```powershell
+   git clone https://github.com/ankibansal56/PISMO.git
+   cd PISMO\PISMO
+   ```
+
+2. **Run with Docker Compose:**
+   ```powershell
+   wsl docker-compose up -d
+   ```
+
+3. **View Logs:**
+   ```powershell
+   wsl docker-compose logs -f
+   ```
+
+4. **Stop:**
+   ```powershell
+   wsl docker-compose down
+   ```
+
+---
+
+### ✅ Post-Setup Verification
+
+Once the application is running, verify everything works:
+
+1. **Health Check:**
+   ```powershell
+   curl http://localhost:8080/actuator/health
+   # Expected: {"status":"UP"}
+   ```
+
+2. **Swagger UI:**
+   - Open: http://localhost:8080/swagger-ui.html
+   - You should see the API documentation
+
+3. **Login Test:**
+   ```powershell
+   curl -X POST http://localhost:8080/api/auth/login `
+     -H "Content-Type: application/json" `
+     -d '{"username":"admin","password":"password123"}'
+   # Expected: JSON response with JWT token
+   ```
+
 ## Quick Start
 
 ### 🐳 Running with Docker (Windows + WSL2)
@@ -78,7 +219,7 @@ git clone https://github.com/ankibansal56/PISMO.git
 cd PISMO/PISMO
 
 # Build and run
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
 **Windows PowerShell:**
@@ -263,7 +404,7 @@ Run tests:
 ./mvnw test
 
 # Windows
-.\mvnw.cmd test
+mvn test
 ```
 
 Test coverage includes:

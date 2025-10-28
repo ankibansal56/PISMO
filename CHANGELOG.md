@@ -41,7 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Spring Data JPA
 - Spring Validation
 - H2 Database (dev)
-- PostgreSQL (prod)
 - Lombok
 - SpringDoc OpenAPI
 - JUnit 5
