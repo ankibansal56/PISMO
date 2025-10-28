@@ -8,12 +8,6 @@ CREATE TABLE IF NOT EXISTS accounts (
     document_number VARCHAR(14) NOT NULL UNIQUE
 );
 
--- Create operation_types table
-CREATE TABLE IF NOT EXISTS operation_types (
-    operation_type_id BIGINT PRIMARY KEY,
-    description VARCHAR(50) NOT NULL
-);
-
 -- Create transactions table
 CREATE TABLE IF NOT EXISTS transactions (
     transaction_id BIGSERIAL PRIMARY KEY,
@@ -21,12 +15,10 @@ CREATE TABLE IF NOT EXISTS transactions (
     operation_type_id BIGINT NOT NULL,
     amount DECIMAL(19, 2) NOT NULL,
     event_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_account FOREIGN KEY (account_id) REFERENCES accounts(account_id),
-    CONSTRAINT fk_operation_type FOREIGN KEY (operation_type_id) REFERENCES operation_types(operation_type_id)
+    CONSTRAINT fk_account FOREIGN KEY (account_id) REFERENCES accounts(account_id)
 );
 
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_transactions_account_id ON transactions(account_id);
-CREATE INDEX IF NOT EXISTS idx_transactions_operation_type_id ON transactions(operation_type_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_event_date ON transactions(event_date);
 CREATE INDEX IF NOT EXISTS idx_accounts_document_number ON accounts(document_number);

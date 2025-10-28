@@ -24,9 +24,8 @@ public class Transaction {
     @JoinColumn(name = "account_id", nullable = false)
     private Account account;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "operation_type_id", nullable = false)
-    private OperationType operationType;
+    @Column(name = "operation_type_id", nullable = false)
+    private Long operationTypeId;
 
     @Column(name = "amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;

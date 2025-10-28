@@ -1,13 +1,11 @@
 package com.pismo.account.service;
 
 import com.pismo.account.domain.entity.Account;
-import com.pismo.account.domain.entity.OperationType;
 import com.pismo.account.domain.entity.Transaction;
 import com.pismo.account.domain.enums.OperationTypeEnum;
 import com.pismo.account.dto.request.TransactionRequest;
 import com.pismo.account.dto.response.TransactionResponse;
 import com.pismo.account.exception.ResourceNotFoundException;
-import com.pismo.account.repository.OperationTypeRepository;
 import com.pismo.account.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +20,6 @@ import java.math.BigDecimal;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
-    private final OperationTypeRepository operationTypeRepository;
     private final AccountService accountService;
 
     @Transactional
@@ -33,10 +30,11 @@ public class TransactionService {
         // Validate account exists
         Account account = accountService.findAccountById(request.getAccountId());
 
-        // Validate operation type exists
-        OperationType operationType = operationTypeRepository.findById(request.getOperationTypeId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Operation type not found with ID: " + request.getOperationTypeId()));
+        // Validate operation type is valid
+        OperationTypeEnum operationTypeEnum = OperationTypeEnum.fromId(request.getOperationTypeId());
+        if (operationTypeEnum == null) {
+            throw new ResourceNotFoundException("Operation type not found with ID: " + request.getOperationTypeId());
+        }
 
         // Apply sign based on operation type (debt transactions are negative)
         BigDecimal amount = calculateAmount(request.getAmount(), request.getOperationTypeId());
@@ -44,7 +42,7 @@ public class TransactionService {
         // Create transaction
         Transaction transaction = new Transaction();
         transaction.setAccount(account);
-        transaction.setOperationType(operationType);
+        transaction.setOperationTypeId(request.getOperationTypeId());
         transaction.setAmount(amount);
 
         Transaction savedTransaction = transactionRepository.save(transaction);
@@ -53,7 +51,7 @@ public class TransactionService {
         return new TransactionResponse(
                 savedTransaction.getTransactionId(),
                 savedTransaction.getAccount().getAccountId(),
-                savedTransaction.getOperationType().getOperationTypeId(),
+                savedTransaction.getOperationTypeId(),
                 savedTransaction.getAmount()
         );
     }

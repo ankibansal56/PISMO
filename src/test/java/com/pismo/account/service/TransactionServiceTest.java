@@ -1,12 +1,10 @@
 package com.pismo.account.service;
 
 import com.pismo.account.domain.entity.Account;
-import com.pismo.account.domain.entity.OperationType;
 import com.pismo.account.domain.entity.Transaction;
 import com.pismo.account.dto.request.TransactionRequest;
 import com.pismo.account.dto.response.TransactionResponse;
 import com.pismo.account.exception.ResourceNotFoundException;
-import com.pismo.account.repository.OperationTypeRepository;
 import com.pismo.account.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -18,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,24 +28,17 @@ class TransactionServiceTest {
     private TransactionRepository transactionRepository;
 
     @Mock
-    private OperationTypeRepository operationTypeRepository;
-
-    @Mock
     private AccountService accountService;
 
     @InjectMocks
     private TransactionService transactionService;
 
     private Account account;
-    private OperationType purchaseOperationType;
-    private OperationType paymentOperationType;
     private TransactionRequest transactionRequest;
 
     @BeforeEach
     void setUp() {
         account = new Account(1L, "12345678900");
-        purchaseOperationType = new OperationType(1L, "PURCHASE");
-        paymentOperationType = new OperationType(4L, "PAYMENT");
     }
 
     @Test
@@ -56,10 +46,9 @@ class TransactionServiceTest {
     void createTransaction_Purchase_NegativeAmount() {
         transactionRequest = new TransactionRequest(1L, 1L, new BigDecimal("50.00"));
         Transaction savedTransaction = new Transaction(
-                1L, account, purchaseOperationType, new BigDecimal("-50.00"), LocalDateTime.now());
+                1L, account, 1L, new BigDecimal("-50.00"), LocalDateTime.now());
 
         when(accountService.findAccountById(1L)).thenReturn(account);
-        when(operationTypeRepository.findById(1L)).thenReturn(Optional.of(purchaseOperationType));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTransaction);
 
         TransactionResponse response = transactionService.createTransaction(transactionRequest);
@@ -77,10 +66,9 @@ class TransactionServiceTest {
     void createTransaction_Payment_PositiveAmount() {
         transactionRequest = new TransactionRequest(1L, 4L, new BigDecimal("60.00"));
         Transaction savedTransaction = new Transaction(
-                1L, account, paymentOperationType, new BigDecimal("60.00"), LocalDateTime.now());
+                1L, account, 4L, new BigDecimal("60.00"), LocalDateTime.now());
 
         when(accountService.findAccountById(1L)).thenReturn(account);
-        when(operationTypeRepository.findById(4L)).thenReturn(Optional.of(paymentOperationType));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTransaction);
 
         TransactionResponse response = transactionService.createTransaction(transactionRequest);
@@ -108,7 +96,6 @@ class TransactionServiceTest {
         transactionRequest = new TransactionRequest(1L, 999L, new BigDecimal("50.00"));
 
         when(accountService.findAccountById(1L)).thenReturn(account);
-        when(operationTypeRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class,
                 () -> transactionService.createTransaction(transactionRequest));
