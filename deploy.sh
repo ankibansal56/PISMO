@@ -14,8 +14,8 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Configuration
-APP_DIR="$HOME/PISMO"
-DOCKER_COMPOSE_FILE="docker-compose.prod.yml"
+APP_DIR="$HOME/PISMO/PISMO"
+DOCKER_COMPOSE_FILE="docker-compose.yml"
 
 # Check if Docker is installed
 if ! command -v docker &> /dev/null; then
@@ -37,27 +37,6 @@ fi
 
 cd "$APP_DIR"
 echo -e "${GREEN}✅ Changed to directory: $APP_DIR${NC}"
-
-# Pull latest code (if using Git)
-if [ -d ".git" ]; then
-    echo -e "${YELLOW}📥 Pulling latest code from Git...${NC}"
-    git pull origin main || echo -e "${YELLOW}⚠️  Git pull failed, continuing with existing code${NC}"
-else
-    echo -e "${YELLOW}⚠️  Not a Git repository, skipping pull${NC}"
-fi
-
-# Check if .env file exists
-if [ ! -f ".env" ]; then
-    echo -e "${YELLOW}⚠️  .env file not found, copying from .env.example${NC}"
-    if [ -f ".env.example" ]; then
-        cp .env.example .env
-        echo -e "${RED}⚠️  Please edit .env file with your production secrets!${NC}"
-        read -p "Press enter to continue after updating .env file..."
-    else
-        echo -e "${RED}❌ .env.example not found. Please create .env file manually.${NC}"
-        exit 1
-    fi
-fi
 
 # Stop running containers
 echo -e "${YELLOW}🛑 Stopping running containers...${NC}"
