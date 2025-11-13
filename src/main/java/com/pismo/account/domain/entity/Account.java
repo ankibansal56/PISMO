@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "accounts")
 @Data
@@ -19,4 +21,17 @@ public class Account {
 
     @Column(name = "document_number", nullable = false, unique = true)
     private String documentNumber;
+
+    @Column(name = "available_credit_limit", nullable = false)
+    private BigDecimal availableCreditLimit = new BigDecimal(1000);
+
+    @Column(name="balance", nullable = false)
+    private BigDecimal balance = new BigDecimal(-1000);
+
+    public Boolean hasSufficientbalance(BigDecimal amount){
+        if(amount.compareTo(this.balance) < 0){
+            return false;
+        }
+        return true;
+    }
 }

@@ -45,6 +45,7 @@ public class TransactionService {
         transaction.setOperationTypeId(request.getOperationTypeId());
         transaction.setAmount(amount);
 
+        accountService.updateAccountBalance(account.getAccountId(), amount);
         Transaction savedTransaction = transactionRepository.save(transaction);
         log.info("Transaction created successfully with ID: {}", savedTransaction.getTransactionId());
 
@@ -52,7 +53,8 @@ public class TransactionService {
                 savedTransaction.getTransactionId(),
                 savedTransaction.getAccount().getAccountId(),
                 savedTransaction.getOperationTypeId(),
-                savedTransaction.getAmount()
+                savedTransaction.getAmount(),
+                savedTransaction.getAccount().getBalance()
         );
     }
 

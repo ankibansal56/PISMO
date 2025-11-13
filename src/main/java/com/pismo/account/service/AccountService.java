@@ -4,6 +4,7 @@ import com.pismo.account.domain.entity.Account;
 import com.pismo.account.dto.request.AccountRequest;
 import com.pismo.account.dto.response.AccountResponse;
 import com.pismo.account.exception.DuplicateResourceException;
+import com.pismo.account.exception.InsufficientBalance;
 import com.pismo.account.exception.ResourceNotFoundException;
 import com.pismo.account.repository.AccountRepository;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -54,5 +57,19 @@ public class AccountService {
     public Account findAccountById(Long accountId) {
         return accountRepository.findById(accountId)
                 .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + accountId));
+    }
+
+
+    @Transactional
+    public void updateAccountBalance(Long accountId, BigDecimal amount){
+        Account account = findAccountById(accountId);
+        if(!account.hasSufficientbalance(amount)){
+            throw new InsufficientBalance("Insufficient balance for account ID: " + accountId);
+        }
+        else{
+            BigDecimal balance = account.getBalance().subtract(amount);
+            account.setBalance(balance);
+            accountRepository.save(account);
+        }
     }
 }

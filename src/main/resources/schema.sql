@@ -5,7 +5,9 @@
 -- Create accounts table
 CREATE TABLE IF NOT EXISTS accounts (
     account_id BIGSERIAL PRIMARY KEY,
-    document_number VARCHAR(14) NOT NULL UNIQUE
+    document_number VARCHAR(14) NOT NULL UNIQUE,
+    balance DECIMAL(19, 2) NOT NULL DEFAULT 1000,
+    available_credit_limit DECIMAL(19, 2) NOT NULL DEFAULT 1000
 );
 
 -- Create transactions table

@@ -103,4 +103,18 @@ public class GlobalExceptionHandler {
         
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(InsufficientBalance.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientBalance(
+            InsufficientBalance ex,
+            HttpServletRequest request) {
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Insufficient Balance",
+                "limit of 1000$ exceeded",
+                request.getRequestURI()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
 }
